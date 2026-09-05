@@ -1388,6 +1388,10 @@ function FontStyle() {
   return (
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+      .tv-root {
+  width: 100%;
+  min-height: 100vh;
+}
       .tv-root * { box-sizing: border-box; }
       .tv-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
       .tv-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
