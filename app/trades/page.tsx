@@ -6,6 +6,8 @@ import {
   Plus,
   Pencil,
   Trash2,
+  Eye,
+  X,
 } from "lucide-react";
 import AddTradeModal, { Trade } from "../AddTradeModal";
 
@@ -22,6 +24,9 @@ export default function TradesPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingTrade, setEditingTrade] = useState<Trade | null>(null);
+
+  // VIEW TRADE
+  const [viewingTrade, setViewingTrade] = useState<Trade | null>(null);
 
   // ============================================
   // LOAD TRADES FROM LOCAL STORAGE
@@ -101,6 +106,11 @@ export default function TradesPage() {
     setTrades((currentTrades) =>
       currentTrades.filter((trade) => trade.id !== id)
     );
+
+    // Close view modal if the deleted trade was being viewed
+    if (viewingTrade?.id === id) {
+      setViewingTrade(null);
+    }
   };
 
   // ============================================
@@ -190,8 +200,17 @@ export default function TradesPage() {
   // ============================================
 
   const openEditTrade = (trade: Trade) => {
+    setViewingTrade(null);
     setEditingTrade(trade);
     setShowModal(true);
+  };
+
+  // ============================================
+  // OPEN VIEW TRADE
+  // ============================================
+
+  const openViewTrade = (trade: Trade) => {
+    setViewingTrade(trade);
   };
 
   // ============================================
@@ -201,6 +220,14 @@ export default function TradesPage() {
   const closeModal = () => {
     setShowModal(false);
     setEditingTrade(null);
+  };
+
+  // ============================================
+  // CLOSE VIEW TRADE
+  // ============================================
+
+  const closeViewTrade = () => {
+    setViewingTrade(null);
   };
 
   return (
@@ -295,6 +322,7 @@ export default function TradesPage() {
           </p>
 
           <p className="text-2xl font-bold mt-2">
+
             <span className="text-green-400">
               {wins}
             </span>
@@ -306,6 +334,7 @@ export default function TradesPage() {
             <span className="text-red-400">
               {losses}
             </span>
+
           </p>
 
         </div>
@@ -357,6 +386,7 @@ export default function TradesPage() {
             }
             className="bg-[#0b0f14] border border-white/10 rounded-lg px-4 py-3 text-sm outline-none"
           >
+
             <option value="ALL">
               All Results
             </option>
@@ -384,6 +414,7 @@ export default function TradesPage() {
             }
             className="bg-[#0b0f14] border border-white/10 rounded-lg px-4 py-3 text-sm outline-none"
           >
+
             <option value="ALL">
               All Directions
             </option>
@@ -407,6 +438,7 @@ export default function TradesPage() {
             }
             className="bg-[#0b0f14] border border-white/10 rounded-lg px-4 py-3 text-sm outline-none"
           >
+
             <option value="ALL">
               All Sessions
             </option>
@@ -628,6 +660,18 @@ export default function TradesPage() {
 
                         <div className="flex justify-end gap-2">
 
+                          {/* VIEW */}
+
+                          <button
+                            onClick={() =>
+                              openViewTrade(trade)
+                            }
+                            className="w-9 h-9 rounded-lg border border-white/10 flex items-center justify-center text-gray-400 hover:text-green-400 hover:border-green-500/30 transition"
+                            title="View trade"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+
                           {/* EDIT */}
 
                           <button
@@ -693,6 +737,342 @@ export default function TradesPage() {
         />
       )}
 
+      {/* ========================================
+          VIEW TRADE MODAL
+      ======================================== */}
+
+      {viewingTrade && (
+
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={closeViewTrade}
+        >
+
+          <div
+            className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#11161d] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+
+            {/* VIEW HEADER */}
+
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#11161d] px-5 py-4">
+
+              <div>
+
+                <div className="flex items-center gap-3">
+
+                  <span
+                    className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                      viewingTrade.type === "LONG"
+                        ? "text-green-400 bg-green-500/10"
+                        : "text-red-400 bg-red-500/10"
+                    }`}
+                  >
+                    {viewingTrade.type}
+                  </span>
+
+                  <h2 className="text-xl font-bold">
+                    {viewingTrade.symbol}
+                  </h2>
+
+                </div>
+
+                <p className="text-xs text-gray-500 mt-1">
+                  {viewingTrade.date || "No date"}
+                </p>
+
+              </div>
+
+              <button
+                onClick={closeViewTrade}
+                className="w-9 h-9 rounded-lg border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:border-white/20 transition"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+            </div>
+
+            {/* VIEW CONTENT */}
+
+            <div className="p-5 space-y-5">
+
+              {/* RESULT / PNL */}
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+                <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-4">
+
+                  <p className="text-xs text-gray-500">
+                    Result
+                  </p>
+
+                  <p
+                    className={`font-semibold mt-1 ${
+                      viewingTrade.result === "WIN"
+                        ? "text-green-400"
+                        : viewingTrade.result === "LOSS"
+                        ? "text-red-400"
+                        : "text-yellow-400"
+                    }`}
+                  >
+                    {viewingTrade.result}
+                  </p>
+
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-4">
+
+                  <p className="text-xs text-gray-500">
+                    P&L
+                  </p>
+
+                  <p
+                    className={`font-semibold mt-1 ${
+                      Number(viewingTrade.pnl || 0) >= 0
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {formatPnL(
+                      Number(viewingTrade.pnl || 0)
+                    )}
+                  </p>
+
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-4">
+
+                  <p className="text-xs text-gray-500">
+                    Lot Size
+                  </p>
+
+                  <p className="font-semibold mt-1">
+                    {viewingTrade.lotSize || "—"}
+                  </p>
+
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-4">
+
+                  <p className="text-xs text-gray-500">
+                    Risk / Reward
+                  </p>
+
+                  <p className="font-semibold mt-1">
+                    {viewingTrade.riskReward
+                      ? `1:${viewingTrade.riskReward}`
+                      : "—"}
+                  </p>
+
+                </div>
+
+              </div>
+
+              {/* TRADE DETAILS */}
+
+              <div>
+
+                <h3 className="text-sm font-semibold mb-3">
+                  Trade Details
+                </h3>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+
+                  <DetailItem
+                    label="Entry"
+                    value={viewingTrade.entry}
+                  />
+
+                  <DetailItem
+                    label="Exit"
+                    value={viewingTrade.exit}
+                  />
+
+                  <DetailItem
+                    label="Stop Loss"
+                    value={viewingTrade.stopLoss}
+                  />
+
+                  <DetailItem
+                    label="Take Profit"
+                    value={viewingTrade.takeProfit}
+                  />
+
+                  <DetailItem
+                    label="Risk Amount"
+                    value={
+                      viewingTrade.riskAmount
+                        ? `$${viewingTrade.riskAmount}`
+                        : "—"
+                    }
+                  />
+
+                  <DetailItem
+                    label="Session"
+                    value={viewingTrade.session}
+                  />
+
+                  <DetailItem
+                    label="Strategy"
+                    value={viewingTrade.strategy}
+                  />
+
+                  <DetailItem
+                    label="Setup Type"
+                    value={viewingTrade.setupType}
+                  />
+
+                  <DetailItem
+                    label="Date"
+                    value={viewingTrade.date}
+                  />
+
+                </div>
+
+              </div>
+
+              {/* NOTES */}
+
+              <div>
+
+                <h3 className="text-sm font-semibold mb-2">
+                  Notes
+                </h3>
+
+                <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-4 text-sm text-gray-300 whitespace-pre-wrap min-h-[70px]">
+                  {viewingTrade.notes || "No notes added."}
+                </div>
+
+              </div>
+
+              {/* PSYCHOLOGY */}
+
+              <div>
+
+                <h3 className="text-sm font-semibold mb-2">
+                  Psychology
+                </h3>
+
+                <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-4 text-sm text-gray-300 whitespace-pre-wrap min-h-[70px]">
+                  {viewingTrade.psychology || "No psychology notes added."}
+                </div>
+
+              </div>
+
+              {/* MISTAKE */}
+
+              <div>
+
+                <h3 className="text-sm font-semibold mb-2">
+                  Mistake
+                </h3>
+
+                <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-4 text-sm text-gray-300 whitespace-pre-wrap min-h-[70px]">
+                  {viewingTrade.mistake || "No mistake recorded."}
+                </div>
+
+              </div>
+
+              {/* LESSON */}
+
+              <div>
+
+                <h3 className="text-sm font-semibold mb-2">
+                  Lesson
+                </h3>
+
+                <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-4 text-sm text-gray-300 whitespace-pre-wrap min-h-[70px]">
+                  {viewingTrade.lesson || "No lesson recorded."}
+                </div>
+
+              </div>
+
+              {/* SCREENSHOT */}
+
+              {viewingTrade.screenshot && (
+
+                <div>
+
+                  <h3 className="text-sm font-semibold mb-2">
+                    Trade Screenshot
+                  </h3>
+
+                  <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-3 overflow-hidden">
+
+                    <img
+                      src={viewingTrade.screenshot}
+                      alt="Trade screenshot"
+                      className="w-full max-h-[500px] object-contain rounded-lg"
+                    />
+
+                  </div>
+
+                </div>
+
+              )}
+
+            </div>
+
+            {/* VIEW FOOTER */}
+
+            <div className="flex flex-col sm:flex-row justify-end gap-2 border-t border-white/10 bg-[#11161d] px-5 py-4">
+
+              <button
+                onClick={() =>
+                  openEditTrade(viewingTrade)
+                }
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:text-blue-400 hover:border-blue-500/30 transition"
+              >
+                <Pencil className="w-4 h-4" />
+                Edit Trade
+              </button>
+
+              <button
+                onClick={closeViewTrade}
+                className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 font-semibold transition"
+              >
+                Close
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
     </main>
+  );
+}
+
+// ============================================
+// DETAIL ITEM COMPONENT
+// ============================================
+
+function DetailItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number | undefined | null;
+}) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-[#0b0f14] p-3">
+
+      <p className="text-xs text-gray-500">
+        {label}
+      </p>
+
+      <p className="text-sm font-medium mt-1 text-gray-200 break-words">
+        {value !== undefined &&
+        value !== null &&
+        value !== ""
+          ? value
+          : "—"}
+      </p>
+
+    </div>
   );
 }
