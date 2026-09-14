@@ -918,15 +918,53 @@ export default function Dashboard() {
       ==================================================== */}
 
       {showAddTrade && (
-        <AddTradeModal
-          onClose={() => {
-            setShowAddTrade(false);
+  <AddTradeModal
+    onClose={() => {
+      setShowAddTrade(false);
 
-            // Reload dashboard data
-            loadTrades();
-          }}
-        />
-      )}
+      // Reload dashboard data
+      loadTrades();
+    }}
+    onSave={(trade) => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+
+      let existingTrades: Trade[] = [];
+
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+
+          if (Array.isArray(parsed)) {
+            existingTrades = parsed;
+          }
+        } catch (error) {
+          console.error("Error reading trades:", error);
+        }
+      }
+
+      const existingIndex = existingTrades.findIndex(
+        (item) => item.id === trade.id
+      );
+
+      let updatedTrades: Trade[];
+
+      if (existingIndex !== -1) {
+        updatedTrades = [...existingTrades];
+        updatedTrades[existingIndex] = trade;
+      } else {
+        updatedTrades = [...existingTrades, trade];
+      }
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(updatedTrades)
+      );
+
+      setTrades(updatedTrades);
+      setShowAddTrade(false);
+    }}
+  />
+)}
 
     </main>
   );
@@ -1468,13 +1506,12 @@ function createChartLabels(
         data[index].date
       ),
 
-      anchor:
-        position === 0
-          ? "start"
-          : position ===
-              indexes.length - 1
-          ? "end"
-          : "middle",
+     anchor:
+  position === 0
+    ? ("start" as const)
+    : position === indexes.length - 1
+    ? ("end" as const)
+    : ("middle" as const),
     })
   );
 }
